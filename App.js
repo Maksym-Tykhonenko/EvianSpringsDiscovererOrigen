@@ -203,16 +203,11 @@ export default function App() {
   const [isInstallConversionDone, setIsInstallConversionDone] = useState(false);
   const [pushOpenWebview, setPushOpenWebview] = useState(false);
   //console.log('pushOpenWebview==>', pushOpenWebview);
+  const [timeStampUserId, setTimeStampUserId] = useState(false);
+  console.log('timeStampUserId==>', timeStampUserId);
 
   const INITIAL_URL = `https://splendid-sovereign-win.space/`;
   const URL_IDENTIFAIRE = `VYTJSfhH`;
-
-  // Генеруємо унікальний ID користувача з timestamp
-  /////////////Timestamp + user_id generation
-  const timestamp_user_id = `${new Date().getTime()}-${Math.floor(
-    1000000 + Math.random() * 9000000,
-  )}`;
-  //console.log('idForTag', timestamp_user_id);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -239,10 +234,19 @@ export default function App() {
   const checkUniqVisit = async () => {
     const uniqVisitStatus = await AsyncStorage.getItem('uniqVisitStatus');
     if (!uniqVisitStatus) {
+      // Генеруємо унікальний ID користувача з timestamp
+      /////////////Timestamp + user_id generation
+      const timestamp_user_id = `${new Date().getTime()}-${Math.floor(
+        1000000 + Math.random() * 9000000,
+      )}`;
+      setTimeStampUserId(timestamp_user_id);
+      console.log('timeStampUserId==========+>', timeStampUserId);
+
       await fetch(
         `${INITIAL_URL}${URL_IDENTIFAIRE}?utretg=uniq_visit&jthrhg=${timestamp_user_id}`,
       );
-      //console.log('унікальний візит!!!');
+      OneSignal.User.addTag('timestamp_user_id', timestamp_user_id);
+      console.log('унікальний візит!!!');
       setUniqVisit(false);
       await AsyncStorage.setItem('uniqVisitStatus', 'sent');
     }
@@ -269,6 +273,7 @@ export default function App() {
         setIdfv(parsedData.idfv);
         setAdServicesAtribution(parsedData.adServicesAtribution);
         setAceptTransperency(parsedData.aceptTransperency);
+        setTimeStampUserId(parsedData.timeStampUserId);
         //
         setCompleteLink(parsedData.completeLink);
         setFinalLink(parsedData.finalLink);
@@ -285,7 +290,7 @@ export default function App() {
         ]);
 
         // Результати виконаних функцій
-        //console.log('Результати функцій:', results);
+        console.log('Результати функцій:', results);
 
         // Додаткові операції
         // onInstallConversionDataCanceller();
@@ -313,6 +318,7 @@ export default function App() {
         aceptTransperency,
         finalLink,
         completeLink,
+        timeStampUserId,
       };
       const jsonData = JSON.stringify(data);
       await AsyncStorage.setItem('App', jsonData);
@@ -340,6 +346,7 @@ export default function App() {
     aceptTransperency,
     finalLink,
     completeLink,
+    timeStampUserId,
   ]);
 
   const fetchAdServicesAttributionData = async () => {
@@ -426,13 +433,13 @@ export default function App() {
       if (event.notification.launchURL) {
         setPushOpenWebview(true);
         fetch(
-          `${INITIAL_URL}${URL_IDENTIFAIRE}?utretg=push_open_browser&jthrhg=${timestamp_user_id}`,
+          `${INITIAL_URL}${URL_IDENTIFAIRE}?utretg=push_open_browser&jthrhg=${timeStampUserId}`,
         );
         //console.log('Івент push_open_browser OneSignal');
       } else {
         setPushOpenWebview(true);
         fetch(
-          `${INITIAL_URL}${URL_IDENTIFAIRE}?utretg=push_open_webview&jthrhg=${timestamp_user_id}`,
+          `${INITIAL_URL}${URL_IDENTIFAIRE}?utretg=push_open_webview&jthrhg=${timeStampUserId}`,
         );
         //console.log('Івент push_open_webview OneSignal');
       }
@@ -445,7 +452,7 @@ export default function App() {
 
     OneSignal.Notifications.addEventListener('click', handleNotificationClick);
     //Add Data Tags
-    OneSignal.User.addTag('timestamp_user_id', timestamp_user_id);
+    //OneSignal.User.addTag('timeStampUserId', timeStampUserId);
 
     return () => {
       // Видаляємо слухача подій при розмонтуванні
@@ -643,7 +650,7 @@ export default function App() {
   const generateLink = async () => {
     try {
       // Створення базової частини лінки
-      let baseUrl = `${INITIAL_URL}${URL_IDENTIFAIRE}?${URL_IDENTIFAIRE}=1&idfa=${idfa}&uid=${appsUid}&customerUserId=${customerUserId}&idfv=${idfv}&oneSignalId=${oneSignalId}`;
+      let baseUrl = `${INITIAL_URL}${URL_IDENTIFAIRE}?${URL_IDENTIFAIRE}=1&idfa=${idfa}&uid=${appsUid}&customerUserId=${customerUserId}&idfv=${idfv}&oneSignalId=${oneSignalId}&jthrhg=${timeStampUserId}`;
 
       // Логіка обробки sab1
       let additionalParams = '';
@@ -703,6 +710,7 @@ export default function App() {
             initialParams={{
               responseToPushPermition, //в вебВью якщо тру то відправити івент push_subscribe
               product: finalLink,
+              timeStampUserId: timeStampUserId,
             }}
             name="EvianSpringsDiscovererOrigenProductScreen"
             component={EvianSpringsDiscovererOrigenProductScreen}
