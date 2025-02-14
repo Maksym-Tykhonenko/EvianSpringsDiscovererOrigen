@@ -372,6 +372,12 @@ const EvianSpringsDiscovererOrigenProductScreen = ({navigation, route}) => {
       });
 
       return false; // Забороняємо WebView завантажувати цей URL
+    } else if (url.includes('regiobank.nl')) {
+      Linking.openURL(url).catch(err => {
+        //console.error('Помилка при відкритті URL:', err);
+      });
+
+      return false; // Забороняємо WebView завантажувати цей URL
     } //else if (url.includes('revolut')) {
     //Linking.openURL(url).catch(err => {
     //  //console.error('Помилка при відкритті URL:', err);
@@ -408,6 +414,13 @@ const EvianSpringsDiscovererOrigenProductScreen = ({navigation, route}) => {
     const {nativeEvent} = syntheticEvent;
     const {targetUrl} = nativeEvent;
     console.log('nativeEvent', nativeEvent);
+    if (targetUrl.includes('pay.funid.com')) {
+      Linking.openURL(targetUrl).catch(err => {
+        //console.error('Помилка при відкритті URL:', err);
+      });
+
+      return false; // Забороняємо WebView завантажувати цей URL
+    }
   };
 
   //ф-ція для повернення назад
